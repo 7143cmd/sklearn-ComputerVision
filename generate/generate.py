@@ -40,7 +40,7 @@ def prepare_dataset(root_dir="generate/dataset", save_npy=False):      # +
                 img = gray2rgb(img)
 
             img_resized = transform.resize(img, IMG_SIZE, anti_aliasing=True)
-            img_array = (img_resized * 255).astype(np.uint8)
+            img_array = (img_resized * 255).astype(np.uint8) #type: ignore
 
             X_list.append(img_array.flatten())
             Y_list.append(label)
@@ -128,7 +128,7 @@ def photo2np(path):
         img = gray2rgb(img)
 
     img_resized = transform.resize(img, IMG_SIZE, anti_aliasing=True)
-    img_array = (img_resized * 255).astype(np.uint8)
+    img_array = (img_resized * 255).astype(np.uint8) #type: ignore
 
     X.append(img_array.flatten())
     return X
@@ -137,6 +137,13 @@ def predict_color(model, path):
 
     arr = photo2np(path)
     prediction = model.predict(arr)
+    
+    proba = model.predict_proba(arr)[0]
+    classes = model.classes_
+
+    for cls, p in zip(classes, proba):
+        print(f"{cls}: {p:.2f}")
+
     return prediction
 
 def model_save():

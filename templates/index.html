@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Censor</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Upload your file</h1>
+
+        <form id="upload-form" enctype="multipart/form-data">
+            <div id="drop-zone" class="drop-zone">
+                <p>Drag & Drop file here or click to upload</p>
+                <input type="file" id="file-input" name="file" accept=".png,.jpg,.jpeg,.txt" hidden>
+            </div>
+
+            <div id="preview" class="preview"></div>
+
+            <button type="submit" id="continue-btn" disabled>Continue</button>
+        </form>
+
+        <div class="result" id="response-block"></div>
+    </div>
+
+    <script>
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const preview = document.getElementById('preview');
+    const continueBtn = document.getElementById('continue-btn');
+    const responseBlock = document.getElementById('response-block');
+
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', async () => {
+        if (!fileInput.files.length) return;
+
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+
+        const response = await fetch('/upload', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+        preview.innerHTML = `<img src="${data.preview_url}" alt="Preview" class="preview-img">`;
+        dropZone.style.display = "none";
+        continueBtn.disabled = false;
+    });
+
+    document.getElementById('upload-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const response = await fetch('/censored', {
+            method: 'POST'
+        });
+
+        const data = await response.json();
+
+        const imageHTML = preview.innerHTML;
+        preview.innerHTML = "";
+
+        responseBlock.innerHTML = `
+            <div class="big-result">
+                ${imageHTML}
+                <h2>Result: ${data.result}</h2>
+                <button id="reset-btn">Start Again</button>
+            </div>
+        `;
+        responseBlock.classList.add('show');
+
+        continueBtn.style.display = "none";
+
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            location.reload();
+        });
+    });
+</script>
+
+</body>
+</html>

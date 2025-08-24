@@ -1,2 +1,4 @@
 log.txt
 /generate/__pycache__
+static/uploads
+__pycache__/
