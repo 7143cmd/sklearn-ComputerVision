@@ -2,3 +2,5 @@ log.txt
 /generate/__pycache__
 static/uploads
 __pycache__/
+generate/dataset/*
+!generate/dataset/README.txt
