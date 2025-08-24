@@ -2,7 +2,7 @@ import os
 import numpy as np
 from skimage import io, transform
 from skimage.color import rgba2rgb, gray2rgb
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder
 from sklearn.linear_model import LogisticRegression
@@ -84,7 +84,7 @@ def train_save():                      # +-
     
     # model = LogisticRegression(class_weight='balanced', max_iter=1000, random_state=42)
 
-    model = RandomForestClassifier()
+    model = RandomForestClassifier(bootstrap =  True, max_depth = None, min_samples_leaf = 4, min_samples_split = 5, n_estimators = 50)
     model.fit(X_train,y_train)
 
 
@@ -94,6 +94,26 @@ def train_save():                      # +-
     # print('Accuracy:', accuracy_score(y_pred, y_train))
     # print(y_pred)
     # print(y_train)
+
+    # Grid search Best fiund      --- {'bootstrap': True, 'max_depth': None, 'min_samples_leaf': 4, 'min_samples_split': 5, 'n_estimators': 50}
+    # param_grid = {
+    #     "n_estimators": [50, 100, 200],
+    #     "max_depth": [None, 5, 10, 20],
+    #     "min_samples_split": [2, 5, 10],
+    #     "min_samples_leaf": [1, 2, 4],
+    #     "bootstrap": [True, False]
+    # }
+    # grid_search = GridSearchCV(
+    #     estimator=model,
+    #     param_grid=param_grid,
+    #     cv=5,
+    #     scoring="f1_macro",
+    #     n_jobs=-1,
+    #     verbose=2
+    # )
+    # grid_search.fit(X_train, y_train)
+
+    # print(grid_search.best_params_)
 
     return model
 
