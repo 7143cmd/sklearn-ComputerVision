@@ -13,15 +13,25 @@ import sys
 
 ####### CONST                                        #
 PATH = 'color_clasifff.pkl'
-IMG_SIZE = (32, 32)
+IMG_SIZE = (32, 32 , 3)
 
 def clear_screen():          # +
     if os.name == 'nt':
         os.system('cls')
 
-def prepare_dataset(root_dir="generate/dataset", save_npy=False):      # +
+def prepare_dataset(root_dir="generate/dataset", save_npy=False):
     X_list, Y_list = [], []
 
+    total_files = 0
+    for label in os.listdir(root_dir):
+        label_dir = os.path.join(root_dir, label)
+        if not os.path.isdir(label_dir):
+            continue
+        for fname in os.listdir(label_dir):
+            if fname.lower().endswith((".png", ".jpg", ".jpeg")):
+                total_files += 1
+    
+    processed_files = 0
     for label in os.listdir(root_dir):
         label_dir = os.path.join(root_dir, label)
         if not os.path.isdir(label_dir):
@@ -34,21 +44,30 @@ def prepare_dataset(root_dir="generate/dataset", save_npy=False):      # +
             path = os.path.join(label_dir, fname)
             img = io.imread(path)
 
-            if img.shape[-1] == 4:
+            if img.ndim == 2: #Cheno - beliy
+                img = gray2rgb(img) 
+            elif img.shape[-1] == 4: #RGBA
                 img = rgba2rgb(img)
-            if len(img.shape) == 2:
-                img = gray2rgb(img)
 
             img_resized = transform.resize(img, IMG_SIZE, anti_aliasing=True)
-            img_array = (img_resized * 255).astype(np.uint8) #type: ignore
+            img_array = (img_resized * 255).astype(np.uint8)
+
+            if img_array.shape != IMG_SIZE:
+                print(f"Failure at: {path}, shape={img_array.shape}")
+                continue
 
             X_list.append(img_array.flatten())
             Y_list.append(label)
+            
+            processed_files += 1
+            print(f"\r{processed_files}/{total_files}", end="", flush=True)
 
+    print()
+    
     X = np.array(X_list)
     Y = np.array(Y_list)
     encoder = LabelEncoder()
-
+    encoder.fit(Y)
 
     if save_npy:    
         np.save("X.npy", X)

@@ -32,11 +32,30 @@
 
     dropZone.addEventListener('click', () => fileInput.click());
 
-    fileInput.addEventListener('change', async () => {
-        if (!fileInput.files.length) return;
+    fileInput.addEventListener('change', () => handleFiles(fileInput.files));
+
+    dropZone.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        dropZone.classList.add("dragover");
+    });
+
+    dropZone.addEventListener("dragleave", () => {
+        dropZone.classList.remove("dragover");
+    });
+
+    dropZone.addEventListener("drop", (event) => {
+        event.preventDefault();
+        dropZone.classList.remove("dragover");
+        if (event.dataTransfer.files.length) {
+            handleFiles(event.dataTransfer.files);
+        }
+    });
+
+    async function handleFiles(files) {
+        if (!files.length) return;
 
         const formData = new FormData();
-        formData.append('file', fileInput.files[0]);
+        formData.append('file', files[0]);
 
         const response = await fetch('/upload', {
             method: 'POST',
@@ -47,15 +66,12 @@
         preview.innerHTML = `<img src="${data.preview_url}" alt="Preview" class="preview-img">`;
         dropZone.style.display = "none";
         continueBtn.disabled = false;
-    });
+    }
 
     document.getElementById('upload-form').addEventListener('submit', async (event) => {
         event.preventDefault();
 
-        const response = await fetch('/censored', {
-            method: 'POST'
-        });
-
+        const response = await fetch('/censored', { method: 'POST' });
         const data = await response.json();
 
         const imageHTML = preview.innerHTML;
@@ -76,7 +92,6 @@
             location.reload();
         });
     });
-</script>
-
+    </script>
 </body>
 </html>
